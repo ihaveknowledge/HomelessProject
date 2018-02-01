@@ -1,6 +1,6 @@
 rm(list=ls())
 
-source("E:\\Michael\\Comsol\\ComsolProject\\functions.R")
+source("E:\\Michael\\Comsol\\HomelessProject\\functions.R")
 
 loadLibraries()
  
@@ -34,6 +34,9 @@ homelessDataRawDF <- homelessDataRawDF[homelessDataRawDF$Application.Date >= dmy
 homelessDataLatestNumbersDF <- homelessDataLatestNumbersDF[homelessDataLatestNumbersDF$Date.Logged >= dmy('01042012'),]
 housingAdviceReasonsDF <- housingAdviceReasonsDF[housingAdviceReasonsDF$actiondate >= dmy('01042012'),]
 
+#remove white spaces in stop reasons and TENANCY ERRORS
+trimws(temporaryAccomodationDataDF$Tenancy_Stop_Reason)
+temporaryAccomodationDataDF <- temporaryAccomodationDataDF[temporaryAccomodationDataDF$Tenancy_Stop_Reason != 'TENANCY ERROR',]
 
 #---create hcode in homeless application data-------
 homelessDataRawDF$hcode <- paste0(homelessDataRawDF$Homelessness.Ref, '/', homelessDataRawDF$Homelessness.Suffix)
@@ -67,41 +70,58 @@ monthlyValues <- mergeData(monthlyValues, homelessDataLatestNumbersDF, "homeless
 monthlyValues <- mergeData(monthlyValues, housingAdviceReasonsDF, "housingAdvice")
 
 #temporary accomodation data
-monthlyValues <- mergeData(monthlyValues, temporaryAccomodationDataDF, "temporaryAccomodation")
+
+monthlyValues <- mergeData(monthlyValues, unique(temporaryAccomodationDataDF[c(1,9,10, 44)]), "temporaryAccomodation")
 
 
 #---examine the results-------------------------
 ggValues <- gather(monthlyValues, "type", "count", 2:4)
 
-
 ggplot(ggValues, aes(x=factor(period), y=count, colour=type, group=type)) + geom_line() + geom_smooth() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, size=8))
+
+#--Timeseries Analysis----------------------------
+
+#use the following function to create time series stl
+#   timeSeries(x, starty, startm, endy, endm, name)
+
+homelessTS <- newTimeSeries(monthlyValues[c(1,2)], "homelessness")
+plot(homelessTS, main="Homeless Applications Time Series Decomposition")
+dev.copy(jpeg,"E:\\Michael\\Comsol\\Charts\\Homeless Applications Time series Analysis.jpg", width=1800,height=1200)
+dev.off()
+
+housingAdviceTS <- newTimeSeries(monthlyValues[c(1,3)], "housingAdvice")
+plot(housingAdviceTS, main="Housing Advice Time Series Decomposition")
+dev.copy(jpeg,"E:\\Michael\\Comsol\\Charts\\Housing Advice Time series Analysis.jpg", width=1800,height=1200)
+dev.off()
+
+temporaryAccomodationTS <- newTimeSeries(monthlyValues[c(1,4)], "temporaryAccomodation")
+plot(temporaryAccomodationTS, main="Temporary Accomodation Time Series Decomposition")
+dev.copy(jpeg,"E:\\Michael\\Comsol\\Charts\\Temporary Accomodation Time series Analysis.jpg", width=1800,height=1200)
+dev.off()
 
 
 #--forecasting-------------------------------------
 
-head(monthlyValues)
-
 #Homelessness
-homelessForecasting <- carryOutTimeSeries(monthlyValues[c(1,2)], "homeless applications")
+homelessForecasting <- carryOutTimeSeries(monthlyValues[c(1,2)])
 homelessPlot <- ggPlotForecast(homelessForecasting, "Homeless Applications")
 homelessPlot
 
 #Housing Advice
-housingAdviceForecasting <- carryOutTimeSeries(monthlyValues[c(1,3)], "housing advice")
+housingAdviceForecasting <- carryOutTimeSeries(monthlyValues[c(1,3)])
 housingAdvicePlot <- ggPlotForecast(housingAdviceForecasting, "Housing Advice")
 housingAdvicePlot
 
 #Temporary Accomodation
-temporaryAccomodationForecasting <- carryOutTimeSeries(monthlyValues[c(1,4)], "temporary accomodation")
+temporaryAccomodationForecasting <- carryOutTimeSeries(monthlyValues[c(1,4)])
 temporaryAccomodationPlot <- ggPlotForecast(temporaryAccomodationForecasting, "Temporary Accomodation")
 temporaryAccomodationPlot
 
-
-
-
-
-
+#checking predictions against real values
+tail(homelessForecasting,20)[1:10,]
+tail(housingAdviceForecasting,20)[1:10,]
+tail(temporaryAccomodationForecasting,20)[1:10,]
 
 
 

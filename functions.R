@@ -51,6 +51,24 @@ timeSeries <- function(x, starty, startm, endy, endm, name)
   total.fit <- stl(total.ts, s.window="period")
   #--forecast---
   # forecasting using stl + random walk - rwdrift
+  return(total.fit)
+}
+
+#create new time Series using period field, uses above time series method
+newTimeSeries <- function(df, varname) {
+  length <- df[is.na(df[2]) == FALSE,2] %>% length()  
+  
+  startY <- substr(min(df[[1]]), 1, 4) %>%  as.numeric()
+  startM <- substr(min(df[[1]]), 5, 6) %>%  as.numeric()
+  endY <- substr(df[length,1], 1, 4) %>%  as.numeric()
+  endM  <- substr(df[length,1], 5, 6) %>%  as.numeric()
+  name <- varname
+  time <- timeSeries(df[1:length,2], startY, startM, endY, endM, name)
+  return(time)
+}
+
+#forecasting for rolling period, using above time series method
+forecasting <- function(total.fit) {
   borough.rw <- forecast(total.fit, method="rwdrift")
   #plot(borough.rw, main=name)
   
@@ -66,7 +84,7 @@ timeSeries <- function(x, starty, startm, endy, endm, name)
 }
 
 #create dataframe for Forecasting
-createTimeSeriesDataFrame <- function(DFforTimeSeries, dataName) {
+createTimeSeriesDataFrame <- function(DFforTimeSeries) {
   #set up period range
   year <- as.character(2012:2018) 
   
@@ -85,7 +103,7 @@ createTimeSeriesDataFrame <- function(DFforTimeSeries, dataName) {
   forcasting <- data.frame(period, stringsAsFactors = F)
   
   #Ensure names in DataFrame are correct
-  names(DFforTimeSeries) <- c("period", dataName)
+  names(DFforTimeSeries) <- c("period", "data")
   
   #-----Add data
   forcasting <- merge(forcasting, DFforTimeSeries, by='period', all.x=T)
@@ -99,15 +117,18 @@ createTimeSeriesDataFrame <- function(DFforTimeSeries, dataName) {
 
 #create rolling forecast
 createForecastPrediction <- function(forcasting){
+  var <- nrow(na.omit(forcasting[2])) -1
+  
   for (i in 1:35){
     s <- i
-    e <- ifelse(i+36 > 60,60, i+36)
+    e <- ifelse(i+36 > var,var, i+36)
     new <- timeSeries(forcasting$data[s:e], 
                       forcasting$year[s], 
                       forcasting$month[s], 
                       forcasting$year[e], 
                       forcasting$month[e], 
                       'housing_advice')
+    new <- forecasting(new)
     names(new) <- c('period', i)
     new <- new[1:16,]
     forcasting <- merge(forcasting, new, by='period', all.x=T)
@@ -127,9 +148,9 @@ createForecastPrediction <- function(forcasting){
 }
 
 #carry out time series analysis, uses above two methods
-carryOutTimeSeries <- function(DFforTimeSeries, dataName){
+carryOutTimeSeries <- function(DFforTimeSeries){
   
-  forcastingDF <- createTimeSeriesDataFrame(DFforTimeSeries, dataName)
+  forcastingDF <- createTimeSeriesDataFrame(DFforTimeSeries)
   forcastingDF <- createForecastPrediction(forcastingDF)
   return(forcastingDF)
   
@@ -141,14 +162,16 @@ ggPlotForecast <- function(forcastingDF, varName){
   
   ggpredict <- gather(forcastingDF, "type", "count", 2:3)
   
-  from <- paste0(substr(min(ggpredict$period), 5, 6), "/",  substr(min(ggpredict$period), 1, 4))
-  to <- paste0(substr(max(ggpredict$period), 5, 6), "/",  substr(max(ggpredict$period), 1, 4))
+  from <- paste0(substr(min(ggpredict$period), 5, 6), "-",  substr(min(ggpredict$period), 1, 4))
+  to <- paste0(substr(max(ggpredict$period), 5, 6), "-",  substr(max(ggpredict$period), 1, 4))
   
   gg1 <- ggplot(ggpredict, aes(x=factor(period), y=count, group=type, colour=type)) + 
     geom_line() + 
     geom_smooth() +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, size=8)) +
     labs(title=paste0(varName,", between ", from, " and ", to,"\nPlus rolling forecast"),
-         x ="Month", y = paste0("Number of ", varName))
+         x ="Month", y = paste0("Count"))
+  filename <- paste0("E:\\Michael\\Comsol\\Charts\\",varName,", between ", from, " and ", to, ".jpg")
+  ggsave(filename, dpi = 300, units = "in", width = 12, height = 8)
   return(gg1)
 }
