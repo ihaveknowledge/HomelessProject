@@ -1,6 +1,6 @@
 loadLibraries <- function(){
   if (!require("pacman")) install.packages("pacman")
-  pacman::p_load(dplyr, lubridate, ggplot2, tidyr, ggrepel, ggthemes, stringr, psych, forecast)
+  pacman::p_load(dplyr, lubridate, ggplot2, tidyr, ggrepel, ggthemes, stringr, psych, forecast, zoo, stringr)
 }
 
 
@@ -171,7 +171,7 @@ ggPlotForecast <- function(forcastingDF, varName){
     theme(axis.text.x = element_text(angle = 90, hjust = 1, size=8)) +
     labs(title=paste0(varName,", between ", from, " and ", to,"\nPlus rolling forecast"),
          x ="Month", y = paste0("Count"))
-  filename <- paste0("E:\\Michael\\Comsol\\Charts\\",varName,", between ", from, " and ", to, ".jpg")
-  ggsave(filename, dpi = 300, units = "in", width = 12, height = 8)
+  #filename <- paste0("E:\\Michael\\Comsol\\Charts\\",varName,", between ", from, " and ", to, ".jpg")
+  #ggsave(filename, dpi = 300, units = "in", width = 12, height = 8)
   return(gg1)
 }

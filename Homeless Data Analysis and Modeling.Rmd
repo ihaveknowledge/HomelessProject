@@ -1,0 +1,206 @@
+---
+title: "Homeless Application Data Analysis"
+author: "Michaeal Sinclair"
+date: "5 February 2018"
+output:
+  word_document:
+    reference_docx: word-styles-reference-01.docx
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library('knitr')
+source("E:\\Michael\\Comsol\\HomelessProject\\main.R")
+```
+
+## Story
+
++ Homelessness data – falling numbers
++ Shadowing front line staff – procedure for homeless applications
++ Forecasting homeless applications
++ Using November / December data, how accurate were our predictions
++ Forecasting Housing advice sessions
++ Using November / December data, how accurate were our predictions
++ Why are people presenting as homeless?
++ Who is presenting, household composition
++ What are the outcomes for people presenting
++ Emerging trends
++ Are there any main predictors for homelessness?
+
++ Homeless Reduction Act 2017 – what impact will it make?
+
+
+# Introduction
+Homeless applications in Barking and Dagenham are a problem with increasing demand on service provision and increasing costs.
+The purpose of this analysis is to review the data around homeless applications and temporary accommodation and to explore predictive characteristics. 
+Outcomes:  
+1.	To predict the future demand on housing services based on past activity  
+2.	Understand the characteristics of those presenting as homeless  
+3.	Investigate any ‘at risk’ and emerging groups from the current data  
+
+## Initial analysis
+The initial analysis of homeless data, once cleaned, highlighted that the number of homeless applications each month had plateaued in 2015 and had been reducing since. At first this seemed to be an error in the data and additional data was requested to verify the accuracy of the original numbers.
+
+## Front line shadowing
+Members of the Insight Hub shadowed front line staff at John Smith House, including the Housing Options Team, Reception Desk and Temporary Accommodation Team.
+Part of the learning that came from the experience was around the procedures in place when someone presents as homeless.
+
+When a resident presents as homeless, they are asked if they are actually homeless or whether they have been given an eviction notice.   
+
+* If a resident is homeless when they present, then a homeless application is started.  
+* If a resident has been given an eviction notice but not yet homeless, then a homeless advice episode is opened and staff work with landlords to try to prevent the resident from becoming homeless.  
+* If the resident is then made homeless and re-presents, a homeless application is then opened from the housing advice episode.
+
+## Additional analysis of data based on new understanding
+Additional homeless data was requested as well as data around the number of housing advice episodes being opened.
+The additional data revealed a trend in both datasets (see figure 1). This trend shows that around September 2015 the number of homeless applications began to decrease and the number of housing advice episodes began to increase.
+This lead to the question around whether there had been a change in the way services are being run that has led to this change? Further analysis later in this report has shown that this may not be the case and this increase may be due to the Welfare reform, however additional investigation is required.
+Although the number of housing advice episodes fluctuates from month to month the general trend demonstrates a steady increase at a similar rate to that of the homeless decrease.
+
+## Figure 1: Homeless applications and Housing advice episodes, April 2012 to November 2017
+
+```{r figure1Plot, echo=FALSE, warning=FALSE, message=FALSE, fig.height=10, fig.width=14}
+figure1Plot
+```
+Figure 1: The thin lines show the actual data and the thicker lines show a smoothed trend line. The blue lines are the original data received ending in March 2017. The Green lines are the updated data requested ending in November 2017. The red lines are the housing advice episodes ending November 2017.
+
+
+
+# Forecasting Homeless Applications
+
+Using historical data, it is possible to forecast future numbers. Using a three year rolling period a forecast has been created. In order to get the most accurate predictions based on varying numbers each month has been forecast more than once using different periods and then an average has been calculated in order to more accurately predict numbers.
+
+##Homeless Applications
+
+## Figure 2: Homeless applications forecasting, April 2012 to December 2017
+
+
+```{r homelessForecastChart, echo=FALSE, warning=FALSE, message=FALSE, fig.height=10, fig.width=14}
+homelessPlot
+```
+
+## Predicted number of homeless applications per month
+
+```{r homelessPredictionValue, echo=FALSE}
+#checking predictions against real values
+htab <- tail(homelessForecasting,17)[1:10,]
+names(htab) <- c("Period", "Homeless Data", "Predicted Numbers")
+kable(htab, format = "markdown", row.names = F)
+
+remove(htab)
+```
+
+
+
+
+##Housing Advice
+
+
+## Figure 3: Housing Advice Episode forecasting, April 2012 to December 2017
+
+
+```{r housingAdviceForecastChart, echo=FALSE, warning=FALSE, message=FALSE, fig.height=10, fig.width=14}
+housingAdvicePlot
+```
+
+## Predicted number of Housing Advice Episodes per month
+
+```{r housingAdvicePredictionValue, echo=FALSE}
+#checking predictions against real values
+htab <- tail(housingAdviceForecasting,17)[1:10,]
+names(htab) <- c("Period", "Homeless Data", "Predicted Numbers")
+kable(htab, format = "markdown", row.names = F)
+
+remove(htab)
+```
+
+
+
+
+## Temporary Accomodation
+
+## Figure 4: Number of Temporary Accomodation starts forecasting, April 2012 to December 2017
+
+
+```{r temporaryAccomodationForecastChart, echo=FALSE, warning=FALSE, message=FALSE, fig.height=10, fig.width=14}
+temporaryAccomodationPlot
+```
+
+## Predicted number of Temporary Accomdation starts per month
+
+```{r temporaryAccomodationPredictionValue, echo=FALSE}
+#checking predictions against real values
+htab <- tail(temporaryAccomodationForecasting,17)[1:10,]
+names(htab) <- c("Period", "Homeless Data", "Predicted Numbers")
+kable(htab, format = "markdown", row.names = F)
+
+remove(htab)
+```
+
+
+# Reasons for Homeless Applications and Housing Advice Episodes
+
+## Homeless Applications
+
+##Figure 5
+
+```{r homelessApplicationResons, echo=FALSE}
+
+```
+
+
+
+## Housing Advice Episodes
+
+##Figure 6: Housing Advice: Top reasons recorded for housing advice in 2017 compared to 2016
+
+```{r housingApplicationsResons, echo=FALSE, warning=FALSE, message=FALSE, fig.height=10, fig.width=14}
+housingAdviceReasonPlot
+```
+
+Figue 6 shows the top most frequently used reasons for housing advice episodes in 2017 and the number of times used in 2016. The following table gives that numbers.
+
+Please note that the Rent Arrears has become more prevalent in 2017, especially within November and December.
+
+```{r housingApplicationsResonsTable, echo=FALSE, warning=FALSE, message=FALSE}
+kable(housingAdviceReasonCount, format="markdown", row.names = F)
+```
+
+## Rent Arrears
+
+While exploring outlier values in the 2017 housing advice data two things were uncovered.
+1. There is a Welfare Reform team who are recording their data on the housing system. This team are dealing with the Welfare reform and the benefits cap and supporting those resident who need it.
+2. There is a worker who attends the Rent arrears meetings and works with those residents who are at risk of eviction due to rent arrears. The worker has started this very recently with a large number of cases in November and December which has led to an unexpected number of housing advice cases within that period.
+
+Figure 7 shows thet the rent arrears function is new and has only been present since October 2017. There is a single worker dealing with these cases.
+
+##Figure 7: Rent Arrears
+
+```{r rentArrearsPlot, echo=FALSE, warning=FALSE, message=FALSE, fig.height=10, fig.width=14}
+ggRentArrearsPlot
+```
+
+## Rent arrears closiure reasons
+
+The following table shows the closure reasons used for rent arrears cases opened. It should be noted that the data is showing a high rate of cases, around 65% being closed successfully and therefore not turning into Homeless applications.
+
+```{r rentArrearsClosurePlot, echo=FALSE, warning=FALSE, message=FALSE, fig.height=10, fig.width=14}
+kable(ggRentArrearsClosureTable, format="markdown", row.names = F)
+```
+
+
+
+#Closure reasons for Homeless Applications and Housing Advice Episodes
+
+
+## Homeless Applications
+
+
+
+## Housing Advice Episodes
+
+
+
+
+
+
