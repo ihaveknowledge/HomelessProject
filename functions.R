@@ -1,7 +1,7 @@
 loadLibraries <- function(){
   if (!require("pacman")) install.packages("pacman")
   pacman::p_load(lubridate, ggplot2, tidyr, ggrepel, ggthemes, stringr, psych, forecast, zoo, stringr, rgdal, purrr, 
-                 dplyr, infer, RColorBrewer)
+                 dplyr, infer, RColorBrewer, GISTools)
 }
 
 
